@@ -13,6 +13,7 @@ class GroupsController < ApplicationController
     @group = Group.new(group_params)
     @group.user = current_user
     if @group.save
+      current_user.join!(@group)
       redirect_to groups_path
     else
       render :new
@@ -44,6 +45,32 @@ class GroupsController < ApplicationController
 
     @group.destroy
     redirect_to groups_path, alert: "Group deleted."
+  end
+
+  def join
+    @group = Group.find(params[:id])
+
+    if !current_user.is_member_of?(@group)
+      current_user.join!(@group)
+      flash[:notice] = "Joined Discussion!"
+    else
+      flash[:warning] = "Already Member!"
+    end
+
+    redirect_to group_path(@group)
+  end
+
+  def quit
+    @group = Group.find(params[:id])
+
+    if current_user.is_member_of?(@group)
+      current_user.quit!(@group)
+      flash[:notice] = "Exited Discussion!"
+    else
+      flash[:warning] = "Not a Member Yet!"
+    end
+
+    redirect_to group_path(@group)
   end
 
 
